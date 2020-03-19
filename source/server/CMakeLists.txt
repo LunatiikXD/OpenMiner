@@ -59,7 +59,7 @@ endif()
 # Link options
 #------------------------------------------------------------------------------
 if (UNIX)
-	set (UNIX_LIBS -ldl)
+	set (UNIX_LIBS -ldl -lpthread)
 endif ()
 
 target_link_libraries(${PROJECT_NAME}_lib sfml-system sfml-network)

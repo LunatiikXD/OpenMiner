@@ -28,21 +28,44 @@
 #include "ServerBlock.hpp"
 #include "ServerChunk.hpp"
 #include "ServerCommandHandler.hpp"
+#include "TerrainGenerator.hpp"
 #include "World.hpp"
 
+void ServerChunk::generate(const TerrainGenerator &terrainGenerator) {
+	WriteLock lock{m_mutex};
+
+	if (!m_isInitialized) {
+		lock.unlock();
+		terrainGenerator.generate(*this);
+		lock.lock();
+
+		m_isInitialized = true;
+	}
+}
+
 void ServerChunk::updateLights() {
-	if (m_lightmap.updateLights() || m_hasChanged) {
+	WriteLock lock{m_mutex};
+
+	lock.unlock();
+	bool areLightsUpdated = m_lightmap.updateLights();
+	lock.lock();
+
+	if (areLightsUpdated || m_hasChanged) {
 		m_isSent = false;
 		m_hasChanged = false;
 	}
 }
 
 void ServerChunk::onBlockPlaced(int x, int y, int z, const Block &block) const {
+	WriteLock lock{m_mutex};
+
 	const ServerBlock &serverBlock = (ServerBlock &)block;
 	serverBlock.onBlockPlaced(glm::ivec3{x + m_x * CHUNK_WIDTH, y + m_y * CHUNK_DEPTH, z + m_z * CHUNK_HEIGHT}, m_world);
 }
 
 void ServerChunk::tick(World &world, ServerCommandHandler &server) {
+	WriteLock lock{m_mutex};
+
 	if (!m_tickingBlocks.empty()) {
 		for (auto &it : m_tickingBlocks) {
 			int z = it.first / (width * height);

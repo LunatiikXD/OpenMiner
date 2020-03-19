@@ -27,7 +27,10 @@
 #ifndef SERVERWORLD_HPP_
 #define SERVERWORLD_HPP_
 
+#include <thread>
 #include <unordered_map>
+
+#include <thread/ThreadPool.hpp>
 
 #include "ServerChunk.hpp"
 #include "TerrainGenerator.hpp"
@@ -79,6 +82,8 @@ class ServerWorld : public World {
 		ServerCommandHandler *m_server = nullptr;
 
 		gk::GameClock &m_clock;
+
+		std::vector<thread::ThreadPool::TaskFuture<void>> m_taskFutures;
 };
 
 #endif // SERVERWORLD_HPP_

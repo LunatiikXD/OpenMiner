@@ -35,11 +35,13 @@
 
 class ServerCommandHandler;
 class ServerPlayer;
+class TerrainGenerator;
 
 class ServerChunk : public Chunk {
 	public:
 		ServerChunk(s32 x, s32 y, s32 z, World &world) : Chunk(x, y, z, world) {}
 
+		void generate(const TerrainGenerator &terrainGenerator);
 		void updateLights();
 
 		void onBlockPlaced(int x, int y, int z, const Block &block) const;
